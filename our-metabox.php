@@ -27,7 +27,7 @@ class OurMetabox {
 			'omb_post_location',
 			__( 'Location Info', 'our-metabox' ),
 			array( $this, 'omb_display_post_location' ),
-			'post',
+			array('post', 'page'),
 			'normal',
 			'default'
 		);
@@ -35,12 +35,17 @@ class OurMetabox {
 
 	public function omb_display_post_location( $post ) {
 		$location = get_post_meta( $post->ID, 'omb_location', true );
-		$label    = __( 'Location', 'our-metabox' );
+		$country  = get_post_meta( $post->ID, 'omb_country', true );
+		$label1   = __( 'Location', 'our-metabox' );
+		$label2   = __( 'Country', 'our-metabox' );
 		wp_nonce_field( 'omb_location', 'omb_location_field' );
 		$metabox_html = <<<EOD
 <p>
-	<label for="omb_location">{$label}</label>
+	<label for="omb_location">{$label1}</label>
 	<input type="text" name="omb_location" id="omb_location" value="{$location}">
+	<br>
+	<label for="omb_country">{$label2}</label>
+	<input type="text" name="omb_country" id="omb_country" value="{$country}">
 </p>
 EOD;
 		echo $metabox_html;
@@ -53,11 +58,14 @@ EOD;
 			return $post_id;
 		}
 		$location = isset( $_POST['omb_location'] ) ? $_POST['omb_location'] : '';
-		if ( '' == $location ) {
+		$country  = isset( $_POST['omb_country'] ) ? $_POST['omb_country'] : '';
+		if ( '' == $location || '' == $country ) {
 			return $post_id;
 		}
 		$location = sanitize_text_field( $location );
+		$country  = sanitize_text_field( $country );
 		update_post_meta( $post_id, 'omb_location', $location );
+		update_post_meta( $post_id, 'omb_country', $country );
 	}
 
 
