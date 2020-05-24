@@ -15,7 +15,8 @@ class OurMetabox {
 		add_action( 'plugins_loaded', array( $this, 'omb_load_textdomain' ) );
 		add_action( 'admin_menu', array( $this, 'omb_add_metabox' ) );
 		add_action( 'save_post', array( $this, 'omb_save_metabox' ) );
-		add_action('admin_enqueue_scripts', array($this, 'omb_admin_assets'));
+		add_action( 'save_post', array( $this, 'omb_save_image' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'omb_admin_assets' ) );
 	}
 
 	public function omb_load_textdomain() {
@@ -38,6 +39,15 @@ class OurMetabox {
 			__( 'Book Info', 'our-metabox' ),
 			array( $this, 'omb_book_metabox' ),
 			array( 'book' ),
+			'normal',
+			'default'
+		);
+
+		add_meta_box(
+			'omb_image_info',
+			__( 'Image Info', 'our-metabox' ),
+			array( $this, 'omb_image_metabox' ),
+			array( 'post' ),
 			'normal',
 			'default'
 		);
@@ -75,8 +85,8 @@ class OurMetabox {
 	<input type="text" name="omb_country" id="omb_country" value="{$country}">
 </p>
 <p>
-	<label for="omb_country">{$label3}: </label>
-	<input type="checkbox" name="omb_is_favorite" id="omb_country" value="1" {$checked}>
+	<label for="omb_is_favorite">{$label3}: </label>
+	<input type="checkbox" name="omb_is_favorite" id="omb_is_favorite" value="1" {$checked}>
 </p>
 
 EOD;
@@ -87,7 +97,7 @@ EOD;
 	<label>{$label4}: </label>
 EOD;
 
-
+		$saved_colors = is_array( $saved_colors ) ? $saved_colors : array();
 		foreach ( $colors as $color ) {
 			$_color       = ucwords( $color );
 			$checked      = in_array( $color, $saved_colors ) ? 'checked' : '';
@@ -173,7 +183,37 @@ EOD;
 	
 </div>
 EOD;
-		
+
+		echo $metabox_html;
+
+	}
+
+	public function omb_image_metabox($post) {
+		wp_nonce_field( 'omb_image', 'omb_image_nonce' );
+		$label        = __( 'Upload Image', 'our-metabox' );
+		$label2       = __( 'Image', 'our-metabox' );
+		$image_id = get_post_meta($post->ID, 'omb_image_id', true);
+		$image_url = get_post_meta($post->ID, 'omb_image_url', true);
+		$image_html = "";
+		if ($image_url) {
+			$image_html .= "<img src='{$image_url}' class='media-image'  />";
+		}
+		$metabox_html = <<<EOD
+<div class="fields">
+	<div class="field_c">
+		<div class="label_c">
+			<label>{$label2}</label>
+		</div>
+		<div class="input_c">
+			<button id="upload_image" class="button">{$label}</button>
+			<input type="hidden" name="omb_image_id" id="omb_image_id" value="{$image_id}"/>
+			<input type="hidden" name="omb_image_url" id="omb_image_url" value="{$image_url}"/>
+			<div id="image-container">{$image_html}</div>
+		</div>
+		<div class="float-clear"></div>
+	</div>
+</div>
+EOD;
 		echo $metabox_html;
 
 	}
@@ -189,9 +229,9 @@ EOD;
 		$colors      = isset( $_POST['omb_clr'] ) ? $_POST['omb_clr'] : array();
 		$sport       = isset( $_POST['omb_sport'] ) ? $_POST['omb_sport'] : '';
 		$car         = isset( $_POST['omb_car'] ) ? $_POST['omb_car'] : '';
-		if ( '' == $location || '' == $country ) {
+		/*if ( '' == $location || '' == $country ) {
 			return $post_id;
-		}
+		}*/
 		$location = sanitize_text_field( $location );
 		$country  = sanitize_text_field( $country );
 		$sport    = sanitize_text_field( $sport );
@@ -205,11 +245,26 @@ EOD;
 		update_post_meta( $post_id, 'omb_car', $car );
 	}
 
+	public function omb_save_image( $post_id ) {
+		if ( ! $this->is_sercured( 'omb_image_nonce', 'omb_image', $post_id ) ) {
+			return $post_id;
+		}
+		$image_id = isset($_POST['omb_image_id']) ? $_POST['omb_image_id'] : '';
+		$image_url = isset($_POST['omb_image_url']) ? $_POST['omb_image_url'] : '';
+		update_post_meta($post_id, 'omb_image_id', $image_id);
+		update_post_meta($post_id, 'omb_image_url', $image_url);
 
-	public function omb_admin_assets () {
-		wp_enqueue_style('omb-admin-style', plugin_dir_url(__FILE__) . 'assets/admin/css/style.css', null, time());
-		wp_enqueue_style('jquery-ui-css', '//code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css');
-		wp_enqueue_script('omb-admin-main-js', plugin_dir_url(__FILE__) . 'assets/admin/js/main.js', array('jquery', 'jquery-ui-datepicker'), time(), true);
+
+	}
+
+
+	public function omb_admin_assets() {
+		wp_enqueue_style( 'omb-admin-style', plugin_dir_url( __FILE__ ) . 'assets/admin/css/style.css', null, time() );
+		wp_enqueue_style( 'jquery-ui-css', '//code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css' );
+		wp_enqueue_script( 'omb-admin-main-js', plugin_dir_url( __FILE__ ) . 'assets/admin/js/main.js', array(
+			'jquery',
+			'jquery-ui-datepicker'
+		), time(), true );
 
 	}
 
@@ -244,3 +299,8 @@ EOD;
 }
 
 new OurMetabox();
+
+
+
+
+

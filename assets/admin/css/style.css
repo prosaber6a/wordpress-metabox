@@ -20,9 +20,26 @@
     height: 30px;
 }
 
+.input_c button {
+    height: 30px;
+}
+
+.button {
+    border: none;
+}
 
 .float-clear {
     clear: both;
+}
+
+#image-container {
+    height: auto;
+    width: 100%;
+}
+
+.media-image {
+    height: 200px;
+    width: auto;
 }
 
 
