@@ -15,6 +15,7 @@ class OurMetabox {
 		add_action( 'plugins_loaded', array( $this, 'omb_load_textdomain' ) );
 		add_action( 'admin_menu', array( $this, 'omb_add_metabox' ) );
 		add_action( 'save_post', array( $this, 'omb_save_metabox' ) );
+		add_action('admin_enqueue_scripts', array($this, 'omb_admin_assets'));
 	}
 
 	public function omb_load_textdomain() {
@@ -28,6 +29,15 @@ class OurMetabox {
 			__( 'Location Info', 'our-metabox' ),
 			array( $this, 'omb_display_metabox' ),
 			array( 'post', 'page' ),
+			'normal',
+			'default'
+		);
+
+		add_meta_box(
+			'omb_book_info',
+			__( 'Book Info', 'our-metabox' ),
+			array( $this, 'omb_book_metabox' ),
+			array( 'book' ),
 			'normal',
 			'default'
 		);
@@ -115,7 +125,7 @@ EOD;
 EOD;
 		foreach ( $cars as $car ) {
 			$_car         = ucwords( $car );
-			$selected = ($saved_car == $car) ? 'selected="selected"' : '';
+			$selected     = ( $saved_car == $car ) ? 'selected="selected"' : '';
 			$metabox_html .= <<<EOD
 			<option value="{$car}" {$selected}>{$_car}</option>
 EOD;
@@ -125,6 +135,36 @@ EOD;
 		$metabox_html .= "</select></p>";
 
 
+		echo $metabox_html;
+
+	}
+
+	public function omb_book_metabox() {
+		wp_nonce_field( 'omb_book_info', 'omb_book_nonce' );
+		$metabox_html = <<<EOD
+<div class="fields">
+	<div class="field_c">
+		<div class="label_c" >
+			<label for="book_author">Book Author</label>
+		</div>
+		<div class="input_c">
+			<input type="text" class="widefat" id="book_author">
+		</div>
+		<div class="float-clear"></div>
+	</div>
+	<div class="field_c">
+		<div class="label_c">
+			<label for="book_isbn">Book ISBN</label>
+		</div>
+		<div class="input_c">
+			<input type="text" id="book_isbn">
+		</div>
+		<div class="float-clear"></div>
+	</div>
+	
+</div>
+EOD;
+		
 		echo $metabox_html;
 
 	}
@@ -154,6 +194,11 @@ EOD;
 		update_post_meta( $post_id, 'omb_clr', $colors );
 		update_post_meta( $post_id, 'omb_sport', $sport );
 		update_post_meta( $post_id, 'omb_car', $car );
+	}
+
+
+	public function omb_admin_assets () {
+		wp_enqueue_style('omb-admin-style', plugin_dir_url(__FILE__) . 'assets/admin/css/style.css', null, time());
 	}
 
 
