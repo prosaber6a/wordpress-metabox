@@ -161,6 +161,15 @@ EOD;
 		</div>
 		<div class="float-clear"></div>
 	</div>
+	<div class="field_c">
+		<div class="label_c">
+			<label for="book_year">Publish Year</label>
+		</div>
+		<div class="input_c">
+			<input type="text" class="omb_datepicker" id="book_year">
+		</div>
+		<div class="float-clear"></div>
+	</div>
 	
 </div>
 EOD;
@@ -199,6 +208,9 @@ EOD;
 
 	public function omb_admin_assets () {
 		wp_enqueue_style('omb-admin-style', plugin_dir_url(__FILE__) . 'assets/admin/css/style.css', null, time());
+		wp_enqueue_style('jquery-ui-css', '//code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css');
+		wp_enqueue_script('omb-admin-main-js', plugin_dir_url(__FILE__) . 'assets/admin/js/main.js', array('jquery', 'jquery-ui-datepicker'), time(), true);
+
 	}
 
 
