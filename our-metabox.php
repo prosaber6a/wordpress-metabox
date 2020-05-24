@@ -39,15 +39,22 @@ class OurMetabox {
 		$is_favorite  = get_post_meta( $post->ID, 'omb_is_favorite', true );
 		$saved_colors = get_post_meta( $post->ID, 'omb_clr', true );
 		$saved_sport  = get_post_meta( $post->ID, 'omb_sport', true );
-		$checked      = $is_favorite == 1 ? 'checked' : '';
-		$label1       = __( 'Location', 'our-metabox' );
-		$label2       = __( 'Country', 'our-metabox' );
-		$label3       = __( 'Is Favorite', 'our-metabox' );
-		$label4       = __( 'Colors', 'our-metabox' );
-		$label5       = __( 'Sports', 'our-metabox' );
-		$colors       = array( 'red', 'blue', 'green', 'yellow', 'magenta', 'pink', 'black' );
-		$sports       = array( 'Cricked', 'Football', 'Basket Ball', 'Athletics', 'Swimming' );
+		$saved_car    = get_post_meta( $post->ID, 'omb_car', true );
+
+		$checked = $is_favorite == 1 ? 'checked' : '';
+		$label1  = __( 'Location', 'our-metabox' );
+		$label2  = __( 'Country', 'our-metabox' );
+		$label3  = __( 'Is Favorite', 'our-metabox' );
+		$label4  = __( 'Colors', 'our-metabox' );
+		$label5  = __( 'Sports', 'our-metabox' );
+		$label6  = __( 'Cars', 'our-metabox' );
+
+		$colors = array( 'red', 'blue', 'green', 'yellow', 'magenta', 'pink', 'black' );
+		$sports = array( 'Cricked', 'Football', 'Basket Ball', 'Athletics', 'Swimming' );
+		$cars   = array( 'Volvo', 'Audi', 'BMW', 'RR', 'TATA' );
+
 		wp_nonce_field( 'omb_location', 'omb_location_field' );
+
 		$metabox_html = <<<EOD
 <p>
 	<label for="omb_location">{$label1}: </label>
@@ -61,6 +68,11 @@ class OurMetabox {
 	<label for="omb_country">{$label3}: </label>
 	<input type="checkbox" name="omb_is_favorite" id="omb_country" value="1" {$checked}>
 </p>
+
+EOD;
+
+//		Check Box
+		$metabox_html .= <<<EOD
 <p>
 	<label>{$label4}: </label>
 EOD;
@@ -77,6 +89,7 @@ EOD;
 		}
 		$metabox_html .= "</p>";
 
+// radio button
 
 		$metabox_html .= <<<EOD
 <p>
@@ -94,6 +107,23 @@ EOD;
 
 		$metabox_html .= "</p>";
 
+//		Select box
+		$metabox_html .= <<<EOD
+<p>
+<label for="omb_car">{$label6}: </label>
+<select name="omb_car" id="omb_car">
+EOD;
+		foreach ( $cars as $car ) {
+			$_car         = ucwords( $car );
+			$selected = ($saved_car == $car) ? 'selected="selected"' : '';
+			$metabox_html .= <<<EOD
+			<option value="{$car}" {$selected}>{$_car}</option>
+EOD;
+
+		}
+
+		$metabox_html .= "</select></p>";
+
 
 		echo $metabox_html;
 
@@ -109,17 +139,21 @@ EOD;
 		$is_favorite = isset( $_POST['omb_is_favorite'] ) ? $_POST['omb_is_favorite'] : 0;
 		$colors      = isset( $_POST['omb_clr'] ) ? $_POST['omb_clr'] : array();
 		$sport       = isset( $_POST['omb_sport'] ) ? $_POST['omb_sport'] : '';
+		$car         = isset( $_POST['omb_car'] ) ? $_POST['omb_car'] : '';
 		if ( '' == $location || '' == $country ) {
 			return $post_id;
 		}
 		$location = sanitize_text_field( $location );
 		$country  = sanitize_text_field( $country );
 		$sport    = sanitize_text_field( $sport );
+		$car      = sanitize_text_field( $car );
+
 		update_post_meta( $post_id, 'omb_location', $location );
 		update_post_meta( $post_id, 'omb_country', $country );
 		update_post_meta( $post_id, 'omb_is_favorite', $is_favorite );
 		update_post_meta( $post_id, 'omb_clr', $colors );
 		update_post_meta( $post_id, 'omb_sport', $sport );
+		update_post_meta( $post_id, 'omb_car', $car );
 	}
 
 
