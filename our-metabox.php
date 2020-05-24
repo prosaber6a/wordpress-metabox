@@ -41,6 +41,8 @@ class OurMetabox {
 		$label1      = __( 'Location', 'our-metabox' );
 		$label2      = __( 'Country', 'our-metabox' );
 		$label3      = __( 'Is Favorite', 'our-metabox' );
+		$label4      = __( 'Colors', 'our-metabox' );
+		$colors      = array( 'red', 'blue', 'green', 'yellow', 'magenta', 'pink', 'black' );
 		wp_nonce_field( 'omb_location', 'omb_location_field' );
 		$metabox_html = <<<EOD
 <p>
@@ -55,7 +57,22 @@ class OurMetabox {
 	<label for="omb_country">{$label3}: </label>
 	<input type="checkbox" name="omb_is_favorite" id="omb_country" value="1" {$checked}>
 </p>
+<p>
+	<label>{$label4}: </label>
 EOD;
+
+		$saved_colors = get_post_meta( $post->ID, 'omb_clr', true );
+
+		foreach ( $colors as $color ) {
+			$_color       = ucwords( $color );
+			$checked      = in_array( $color, $saved_colors ) ? 'checked' : '';
+			$metabox_html .= <<<EOD
+<label for="omb_clr_{$color}">{$_color} </label>
+<input type="checkbox" name="omb_clr[]" id="omb_clr_{$color}" value="{$color}" {$checked} />
+EOD;
+
+		}
+		$metabox_html .= "</p>";
 		echo $metabox_html;
 
 	}
@@ -68,6 +85,7 @@ EOD;
 		$location    = isset( $_POST['omb_location'] ) ? $_POST['omb_location'] : '';
 		$country     = isset( $_POST['omb_country'] ) ? $_POST['omb_country'] : '';
 		$is_favorite = isset( $_POST['omb_is_favorite'] ) ? $_POST['omb_is_favorite'] : 0;
+		$colors      = isset( $_POST['omb_clr'] ) ? $_POST['omb_clr'] : array();
 		if ( '' == $location || '' == $country ) {
 			return $post_id;
 		}
@@ -76,6 +94,7 @@ EOD;
 		update_post_meta( $post_id, 'omb_location', $location );
 		update_post_meta( $post_id, 'omb_country', $country );
 		update_post_meta( $post_id, 'omb_is_favorite', $is_favorite );
+		update_post_meta( $post_id, 'omb_clr', $colors );
 	}
 
 
