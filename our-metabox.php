@@ -16,6 +16,7 @@ class OurMetabox {
 		add_action( 'admin_menu', array( $this, 'omb_add_metabox' ) );
 		add_action( 'save_post', array( $this, 'omb_save_metabox' ) );
 		add_action( 'save_post', array( $this, 'omb_save_image' ) );
+		add_action( 'save_post', array( $this, 'omb_save_gallery' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'omb_admin_assets' ) );
 	}
 
@@ -47,6 +48,15 @@ class OurMetabox {
 			'omb_image_info',
 			__( 'Image Info', 'our-metabox' ),
 			array( $this, 'omb_image_metabox' ),
+			array( 'post' ),
+			'normal',
+			'default'
+		);
+
+		add_meta_box(
+			'omb_gallery_info',
+			__( 'Gallery Info', 'our-metabox' ),
+			array( $this, 'omb_gallery_metabox' ),
 			array( 'post' ),
 			'normal',
 			'default'
@@ -217,6 +227,32 @@ EOD;
 		echo $metabox_html;
 
 	}
+	public function omb_gallery_metabox($post) {
+		wp_nonce_field( 'omb_gallery', 'omb_gallery_nonce' );
+		$label        = __( 'Gallery', 'our-metabox' );
+		$label2       = __( 'Upload Images', 'our-metabox' );
+		$image_id = get_post_meta($post->ID, 'omb_gallery_id', true);
+		$image_url = get_post_meta($post->ID, 'omb_gallery_url', true);
+
+		$metabox_html = <<<EOD
+<div class="fields">
+	<div class="field_c">
+		<div class="label_c">
+			<label>{$label2}</label>
+		</div>
+		<div class="input_c">
+			<button id="upload_gallery" class="button">{$label}</button>
+			<input type="hidden" name="omb_gallery_id" id="omb_gallery_id" value="{$image_id}"/>
+			<input type="hidden" name="omb_gallery_url" id="omb_gallery_url" value="{$image_url}"/>
+			<div id="images-container"></div>
+		</div>
+		<div class="float-clear"></div>
+	</div>
+</div>
+EOD;
+		echo $metabox_html;
+
+	}
 
 
 	public function omb_save_metabox( $post_id ) {
@@ -246,13 +282,25 @@ EOD;
 	}
 
 	public function omb_save_image( $post_id ) {
-		if ( ! $this->is_sercured( 'omb_image_nonce', 'omb_image', $post_id ) ) {
+		if ( ! $this->is_sercured( 'omb_gallery_nonce', 'omb_gallery', $post_id ) ) {
 			return $post_id;
 		}
-		$image_id = isset($_POST['omb_image_id']) ? $_POST['omb_image_id'] : '';
-		$image_url = isset($_POST['omb_image_url']) ? $_POST['omb_image_url'] : '';
+		$image_id = isset($_POST['omb_images_id']) ? $_POST['omb_images_id'] : '';
+		$image_url = isset($_POST['omb_images_url']) ? $_POST['omb_images_url'] : '';
 		update_post_meta($post_id, 'omb_image_id', $image_id);
 		update_post_meta($post_id, 'omb_image_url', $image_url);
+
+
+	}
+
+	public function omb_save_gallery( $post_id ) {
+		if ( ! $this->is_sercured( 'omb_gallery_nonce', 'omb_gallery', $post_id ) ) {
+			return $post_id;
+		}
+		$image_id = isset($_POST['omb_gallery_id']) ? $_POST['omb_gallery_id'] : '';
+		$image_url = isset($_POST['omb_gallery_url']) ? $_POST['omb_gallery_url'] : '';
+		update_post_meta($post_id, 'omb_gallery_id', $image_id);
+		update_post_meta($post_id, 'omb_gallery_url', $image_url);
 
 
 	}
